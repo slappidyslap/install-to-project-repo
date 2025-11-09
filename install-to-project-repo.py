@@ -68,7 +68,7 @@ def maven_dependencies(parsing_results):
   return "\n".join([maven_dependency(a).strip() for a in unique_artifacts()])
 
 
-def install(path, parsing):
+def install(path, parsing, local_repository):
   os.system(
     "mvn install:install-file" + \
     " -Dfile=" + path + \
@@ -76,7 +76,7 @@ def install(path, parsing):
     " -DartifactId=" + parsing["name"] + \
     " -Dversion=" + parsing["version"] + ("-SNAPSHOT" if parsing["snapshot"] else "") + \
     " -Dpackaging=jar" + \
-    " -DlocalRepositoryPath=repo" + \
+    " -DlocalRepositoryPath=" + local_repository + \
     " -DcreateChecksum=true" + \
     (" -Dclassifier=sources" if parsing["source"] else "")
   )
@@ -201,14 +201,23 @@ parser.add_argument('-i', '--interactive',
 parser.add_argument('-d', '--delete',
                     dest='delete', action='store_true', default=False,
                     help='Delete successfully installed libs in source location')
+parser.add_argument('-p', '--path',
+                    dest='path', default='lib',
+                    help='Path to directory with jar files')
+parser.add_argument('-l', '--local-repository',
+                    dest='local_repository', default='repo',
+                    help='Local Maven repository folder where resolved dependencies will be stored')
 
 args = parser.parse_args()
 
+if not os.path.isdir(args.path):
+  print(f"Error: Directory '{args.path}' does not exist.")
+  exit(1)
 
 parsings = (
-  [(path, parse_interactively(path)) for path in jars("lib")]
+  [(path, parse_interactively(path)) for path in jars(args.path)]
   if args.interactive else
-  [(path, parse_by_eclipse_standard(path)) for path in jars("lib")]
+  [(path, parse_by_eclipse_standard(path)) for path in jars(args.path)]
 )
 
 unparsable_files = [r[0] for r in parsings if r[1] == None]
@@ -218,11 +227,10 @@ if unparsable_files:
     print("| - " + f)
   print("Make sure the files are in the following format: groupId.artifactId[.source]_version[.SNAPSHOT].jar")
 
-
 parsings = [p for p in parsings if p[1] != None]
 
 for (path, parsing) in parsings:
-  install(path, parsing)
+  install(path, parsing, args.local_repository)
   if args.delete:
     os.remove(path)
 

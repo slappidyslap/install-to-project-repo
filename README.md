@@ -1,20 +1,24 @@
-#Install to Project Repo
+# Install to Project Repo
 A Python script for easily installing libraries to an in-project Maven repository. It creates a repository in the root folder of the project complete with poms, checksums and metadata. It also outputs the appropriate dependencies xml to be inserted in your `pom` file.
 
 
-##What it does
+## What it does
 * When run in standard mode it looks for jars in the `lib` folder having name of Eclipse standard and ignores all files that don't match it. The Eclipse naming standard has the following format: 
 
         groupId.artifactId[.source]_version[.SNAPSHOT].jar
 
 * When run in interactive mode (`-i`) it asks you to choose from the possible variants of name resolution. In this mode you can parse files of different naming standards.
 
-* When run with `-d` modifier it deletes all successfully installed jars in the `lib` folder.
+* When run with `-d` modifier it deletes all successfully installed libs in the `lib` folder.
+
+* You can also specify a custom folder with jar files using the `-p` option. By default it uses `lib`.
+
+* To change the output repository location use the `-l` option. By default it uses `repo`.
 
 * After successful installation of all jars it prints out all according dependencies for your `pom`.
 
 
-##Using
+## Using
 
 Just run it from the folder containing your lib folder. 
 
@@ -28,7 +32,7 @@ After the script is complete copy-paste the generated dependencies xml to your `
 For more details please read [this StackOverflow answer](http://stackoverflow.com/a/7623805/485115).
 
 
-##Example
+## Example
 If the structure of the `lib` folder is as follows:
 
     lib/
